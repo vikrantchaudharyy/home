@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vikrant | Terminal</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #00ff9c;
+      font-family: monospace;
+      font-size: 16px;
+    }
+
+    #terminal {
+      padding: 20px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .line {
+      white-space: pre-wrap;
+      margin: 5px 0;
+    }
+
+    .prompt {
+      color: #00ff9c;
+    }
+
+    .input {
+      outline: none;
+      border: none;
+      background: transparent;
+      color: #fff;
+      font-family: monospace;
+      font-size: 16px;
+      width: 80%;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background: #00ff9c;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal"></div>
+
+  <script>
+    const terminal = document.getElementById("terminal");
+
+    const history = [
+      "Initializing system...",
+      "Loading profile...",
+      "Welcome Vikrant Chaudhary",
+      "Type 'help' to see available commands."
+    ];
+
+    const commands = {
+      help: `
+Available commands:
+- about
+- skills
+- contact
+- clear
+- sudo reveal-secrets
+      `,
+      about: `
+Vikrant Chaudhary
+Curious builder who loves systems, automation, and backend engineering.
+Enjoys solving complex problems and creating efficient tools.
+      `,
+      skills: `
+Skills:
+- Go, Python
+- Systems Design
+- Cloud & DevOps
+- Kubernetes, AWS, GCP
+- Data Security & Cryptography
+- Automation & Backend Engineering
+      `,
+      contact: `
+Contact:
+- Email: vikrant.chaudhary.cse@gmail.com
+- GitHub: github.com/vikrantchaudharyy
+- LinkedIn: linkedin.com/in/vikrantchaudhary7
+      `,
+      "sudo reveal-secrets": `
+Access granted...
+
+Secrets:
+- I automate things I shouldn't 😄
+- I enjoy debugging more than coding
+- I trust logs more than people
+- Coffee > Sleep
+      `
+    };
+
+    let commandHistory = [
+      "about",
+      "skills"
+    ];
+    let historyIndex = commandHistory.length;
+
+    function typeLine(text, callback) {
+      let i = 0;
+      const line = document.createElement("div");
+      line.className = "line";
+      terminal.appendChild(line);
+
+      function typing() {
+        if (i < text.length) {
+          line.textContent += text.charAt(i);
+          i++;
+          setTimeout(typing, 20);
+        } else {
+          callback && callback();
+        }
+      }
+
+      typing();
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function print(text) {
+      const line = document.createElement("div");
+      line.className = "line";
+      line.textContent = text;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function newPrompt() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "line";
+
+      const prompt = document.createElement("span");
+      prompt.className = "prompt";
+      prompt.textContent = "vikrant@home:~$ ";
+
+      const input = document.createElement("input");
+      input.className = "input";
+      input.autofocus = true;
+
+      wrapper.appendChild(prompt);
+      wrapper.appendChild(input);
+      terminal.appendChild(wrapper);
+
+      input.focus();
+
+      input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+          const value = input.value.trim();
+          input.disabled = true;
+
+          handleCommand(value);
+        }
+
+        if (e.key === "ArrowUp") {
+          historyIndex = Math.max(0, historyIndex - 1);
+          input.value = commandHistory[historyIndex] || "";
+        }
+
+        if (e.key === "ArrowDown") {
+          historyIndex = Math.min(commandHistory.length, historyIndex + 1);
+          input.value = commandHistory[historyIndex] || "";
+        }
+      });
+    }
+
+    function handleCommand(cmd) {
+      if (cmd) {
+        commandHistory.push(cmd);
+        historyIndex = commandHistory.length;
+      }
+
+      if (cmd === "clear") {
+        terminal.innerHTML = "";
+        init();
+        return;
+      }
+
+      if (commands[cmd]) {
+        print(commands[cmd]);
+      } else if (cmd === "") {
+        // do nothing
+      } else {
+        print(`Command not found: ${cmd}`);
+      }
+
+      newPrompt();
+    }
+
+    function init() {
+      function next(i) {
+        if (i < history.length) {
+          typeLine(history[i], () => next(i + 1));
+        } else {
+          newPrompt();
+        }
+      }
+      next(0);
+    }
+
+    init();
+  </script>
+</body>
+</html>
